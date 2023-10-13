@@ -7,7 +7,7 @@ libraries and binaries.
 
 ```yaml
 - name: Install CIRCT
-  uses: seldridge/install-circt@v1.0.0
+  uses: llvm/install-circt@v1.0.0
   with:
     # The version of CIRCT to install.  This must match a release of CIRCT,
     # e.g., 'firtool-1.56.1' or one of the following special strings:
