@@ -2,16 +2,39 @@ name: Install CIRCT
 
 inputs:
   version:
-    description: 'version to install ("nightly" installs latest nightly)'
-    default: 'default'
+    description: |
+      The version of CIRCT to install.  This must match a release of CIRCT with
+      two exceptions used to indicate special versions:
+        - "nightly" installs the latest nightly
+        - "version-file" installs using a version specified by a JSON file whose
+          location is set by the "version-file" input.  This is done to
+          facilitate Continuous Delivery (CD) flows.
+    required: true
+    default: 'version-file'
+  version-file:
+    description: |
+      A path to a JSON file that sets the CIRCT version to use.  This is
+      required, but can be a dummy value if the user will not use the
+      "version-file" option for the "version" input.
+    required: true
+    default: './etc/circt.json'
   github-token:
-    description: 'The GitHub token used to download CIRCT nightly'
+    description: |
+      The GitHub token used to download CIRCT nightly.  It is unlikely that the
+      user needs to set this differently from the default.
     required: true
     default: ${{ github.token }}
   file-name:
-    description: 'The name of the CIRCT tarball'
-    required: false
+    description: |
+      The name of the CIRCT tarball to install.  For available tarballs, see
+      what is uploaded by a nightly build or by a release.
+    required: true
     default: 'circt-full-shared-linux-x64.tar.gz'
+  install-dir:
+    description: |
+      The directory where CIRCT will be installed.
+    required: true
+    default: 'circt'
 
 runs:
   using: composite
@@ -20,13 +43,13 @@ runs:
       shell: bash
       if: inputs.version != 'nightly'
       run: |
-        if [[ "${{ inputs.version }}" == "default" ]]; then
-          export VERSION=`jq -r .version < ./etc/circt.json`
+        if [[ "${{ inputs.version }}" == "version-file" ]]; then
+          export VERSION=`jq -r .version < ${{ inputs.version-file }}`
         else
           export VERSION="${{ inputs.version }}"
         fi
-        mkdir circt
-        wget -O - https://github.com/llvm/circt/releases/download/$VERSION/${{ inputs.file-name }} | tar -zx -C circt/ --strip-components 1
+        mkdir ${{ inputs.install-dir }}
+        wget -O - https://github.com/llvm/circt/releases/download/$VERSION/${{ inputs.file-name }} | tar -zx -C ${{ inputs.install-dir }}/ --strip-components 1
 
     - name: Download Latest Nightly CIRCT-full
       shell: bash
@@ -46,11 +69,11 @@ runs:
              -H "X-GitHub-Api-Version: 2022-11-28" \
              "https://api.github.com/repos/llvm/circt/actions/artifacts/$ARTIFACT_ID/zip" \
              --output download.zip
-        mkdir circt/
-        unzip -p download.zip | tar -zx -C circt/ --strip-components 1
+        mkdir ${{ inputs.install-dir }}
+        unzip -p download.zip | tar -zx -C ${{ inputs.install-dir }}/ --strip-components 1
         rm download.zip
 
-    - shell: bash
+    - name: Add the ${{ inputs.install-dir }}/bin to $PATH
+      shell: bash
       run: |
-        echo "$(pwd)/circt/bin" >> $GITHUB_PATH
-        ./circt/bin/firtool -version
+        echo "$(pwd)/${{ inputs.install-dir }}/bin" >> $GITHUB_PATH
