@@ -28,7 +28,7 @@ runs:
         mkdir circt
         wget -O - https://github.com/llvm/circt/releases/download/$VERSION/${{ inputs.file-name }} | tar -zx -C circt/ --strip-components 1
 
-    - name: Download Latest Nighlty CIRCT-full
+    - name: Download Latest Nightly CIRCT-full
       shell: bash
       if: inputs.version == 'nightly'
       run: |
