@@ -1,5 +1,8 @@
 name: 'Install CIRCT'
 description: 'Install pre-built binaries and libraries from llvm/circt'
+branding:
+  icon: 'download'
+  color: 'blue'
 
 inputs:
   version:
