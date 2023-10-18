@@ -54,8 +54,13 @@ runs:
   steps:
     - name: 'Download release or nightly CIRCT'
       shell: bash
+      # TODO: This uses ${GITHUB_ACTION_PATH} and not ${{ github.action_path }}
+      # to work around GitHub runners incorrectly substituting the latter when
+      # running in a container environment [1].  Remove this if this is fixed.
+      #
+      # [1]: https://github.com/actions/runner/issues/2185
       run: |
-        ${{ github.action_path }}/bin/download-release-or-nightly-circt.sh \
+        ${GITHUB_ACTION_PATH}/bin/download-release-or-nightly-circt.sh \
           -f ${{ inputs.file-name }} \
           -g ${{ inputs.github-token }} \
           -i ${{ inputs.install-dir }} \
